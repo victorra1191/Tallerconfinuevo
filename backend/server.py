@@ -3,37 +3,42 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 
-# 1. Importamos la conexión a Neon y las tablas
-from database import engine
+# Importamos la conexión y los modelos
+from database import engine, Base
 import models
 
-# Crear las tablas físicamente en Neon.tech al arrancar
-models.Base.metadata.create_all(bind=engine)
+# Intentar crear las tablas en Neon al cargar el archivo
+try:
+    models.Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Error inicializando tablas: {e}")
 
-# Import route modules
+# Importamos las rutas (Asegúrate que estos archivos existan en /routes)
 from routes import products, services, quotes, appointments, contact, newsletter, blog, admin
 
-# Create the main app
 app = FastAPI(
     title="Confiautos API",
-    description="API para el sistema de gestión de Confiautos Panama",
+    description="Sistema de gestión para Confiautos Panama",
     version="1.0.0"
 )
 
-# Create a router with the /api prefix
+# Configuración de CORS para que React pueda hablar con la API
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Prefijo /api para todas las rutas
 api_router = APIRouter(prefix="/api")
 
-# Health check endpoint
 @api_router.get("/")
 async def root():
-    return {
-        "message": "Confiautos API is running",
-        "version": "1.0.0",
-        "status": "healthy",
-        "location": "Panama City"
-    }
+    return {"status": "online", "message": "Confiautos API Ready"}
 
-# Include all route modules
+# Incluimos los módulos de rutas
 api_router.include_router(products.router)
 api_router.include_router(services.router)
 api_router.include_router(quotes.router)
@@ -45,20 +50,6 @@ api_router.include_router(admin.router)
 
 app.include_router(api_router)
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 @app.on_event("startup")
 async def startup_event():
-    logger.info("🚀 Confiautos API iniciando en Vercel...")
-    # Aquí podrías poner lógica para crear el admin inicial si la tabla está vacía
+    print("🚀 Servidor Confiautos encendido exitosamente")
