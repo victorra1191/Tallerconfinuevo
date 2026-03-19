@@ -4,8 +4,8 @@ import os
 import logging
 
 # Importamos la conexión y los modelos
-from database import engine, Base
-import models
+from .database import engine, Base
+from . import models
 
 # Intentar crear las tablas en Neon al cargar el archivo
 try:
@@ -14,8 +14,8 @@ except Exception as e:
     print(f"Error inicializando tablas: {e}")
 
 # Importamos las rutas (Asegúrate que estos archivos existan en /routes)
-from routes import products, services, quotes, appointments, contact, newsletter, blog, admin
-
+from .routes import products, services, quotes, appointments, contact, newsletter, blog, admin
+    
 app = FastAPI(
     title="Confiautos API",
     description="Sistema de gestión para Confiautos Panama",
