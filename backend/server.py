@@ -2,6 +2,9 @@ from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent))
 
 # Importamos la conexión y los modelos
 from .database import engine, Base
