@@ -4,7 +4,7 @@ import os
 import logging
 
 # 1. Importamos la conexión a Neon y las tablas
-from database import engine, DBManager
+from database import engine
 import models
 
 # Crear las tablas físicamente en Neon.tech al arrancar
