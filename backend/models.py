@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 import uuid
 from sqlalchemy import Column, String, Float, DateTime, Boolean, JSON
-from database import Base  # Importante: Esto viene del archivo database.py que editamos
+from .database import Base  # Importante: Esto viene del archivo database.py que editamos
 
 # ==========================================
 # 1. TABLAS PARA NEON.TECH (SQLAlchemy)
