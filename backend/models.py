@@ -2,6 +2,52 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime
 import uuid
+from sqlalchemy import Column, String, Float, DateTime, Boolean, JSON
+from database import Base  # Importante: Esto viene del archivo database.py que editamos
+
+# ==========================================
+# 1. TABLAS PARA NEON.TECH (SQLAlchemy)
+# ==========================================
+
+class ProductTable(Base):
+    __tablename__ = "products"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    price = Column(Float)
+    sku = Column(String, unique=True)
+    type = Column(String)
+    brand = Column(String)
+    description = Column(String)
+    in_stock = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class AppointmentTable(Base):
+    __tablename__ = "appointments"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
+    email = Column(String)
+    vehicle_brand = Column(String)
+    vehicle_model = Column(String)
+    appointment_date = Column(String)
+    appointment_time = Column(String)
+    notes = Column(String)
+    status = Column(String, default="scheduled")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class ContactTable(Base):
+    __tablename__ = "contacts"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    subject = Column(String)
+    message = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# ==========================================
+# 2. MODELOS PARA LA API (Pydantic)
+# --- Aquí dejas lo que ya tenías antes ---
+# ==========================================
 
 # Product Models
 class Product(BaseModel):
