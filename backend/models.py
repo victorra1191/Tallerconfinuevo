@@ -15,7 +15,7 @@ class Product(Base):
     brand = Column(String, index=True)
     type = Column(String, index=True)
     price = Column(Float)
-    sku = Column(String, unique=True, nullable=True)
+    sku = Column(String, unique=True, nullable=True) # <--- Esta es la clave
     description = Column(Text, nullable=True)
     image = Column(String)
     in_stock = Column(Boolean, default=True)
