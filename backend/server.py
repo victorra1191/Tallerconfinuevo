@@ -46,3 +46,8 @@ async def startup_event():
 @app.get("/")
 async def health():
     return {"status": "online", "server": "Confiautos Panama"}
+@app.get("/seed")
+def run_seed():
+    import seed
+    seed.seed_data()
+    return {"message": "Database seeded successfully"}
