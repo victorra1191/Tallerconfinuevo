@@ -35,9 +35,8 @@ def run_seed():
     return {"status": "success", "msg": "62 productos cargados"}
 
 # Solo cargamos productos por ahora para probar estabilidad
-app.include_router(products.router, prefix="/products")
+app.include_router(products.router)
 
 @app.on_event("startup")
 async def startup_event():
-    # Esto asegura que Neon cree las tablas al primer contacto
     models.Base.metadata.create_all(bind=database.engine)
