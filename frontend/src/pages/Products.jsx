@@ -29,22 +29,22 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // CAMBIO CRÍTICO: Si no hay VITE_API_URL, usamos '/api' relativo. 
-        // Esto evita errores de "Not Found" en Vercel.
-        const baseUrl = import.meta.env.VITE_API_URL || '/api';
         
-        // Eliminamos barras dobles si existen y aseguramos la ruta final
+        // Certeza técnica: Create React App requiere process.env y el prefijo REACT_APP_
+        const baseUrl = process.env.REACT_APP_API_URL || '/api';
+        
+        // Limpieza exacta de la URL para evitar dobles barras //
         const cleanUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         
         const response = await axios.get(`${cleanUrl}/products/`);
         
         setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error detallado:", error);
+        console.error("Error detallado de conexión:", error);
         toast({
           variant: "destructive",
           title: "Error de inventario",
-          description: "No se pudo conectar con Neon. Revisa la ruta /api/products/",
+          description: "No se pudo conectar con la base de datos Neon.",
         });
       } finally {
         setLoading(false);
@@ -154,7 +154,12 @@ const Products = () => {
             {filteredProducts.map((product) => (
               <Card key={product.id} className="group hover:border-blue-500 transition-all">
                 <div className="h-40 bg-white relative overflow-hidden">
-                  <img src={getProductImageByType(product)} alt={product.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform" />
+                  <img 
+                    src={getProductImageByType(product)} 
+                    alt={product.name} 
+                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform" 
+                    onError={(e) => { e.target.src = '/images/marcas/generico.png' }}
+                  />
                   <Badge className="absolute top-2 right-2">{product.brand}</Badge>
                 </div>
                 <CardHeader className="p-4">
@@ -162,7 +167,7 @@ const Products = () => {
                   <CardDescription className="text-xs">SKU: {product.sku}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex justify-between items-center">
-                  <span className="text-xl font-bold text-red-600">${product.price}</span>
+                  <span className="text-xl font-bold text-red-600">${Number(product.price).toFixed(2)}</span>
                   <Button size="sm" onClick={() => handleAddToCart(product)}>
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
