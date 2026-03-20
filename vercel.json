@@ -8,6 +8,18 @@
   ],
   "routes": [
     {
+      "src": "/api/health",
+      "dest": "backend/server.py"
+    },
+    {
+      "src": "/api/seed-db",
+      "dest": "backend/server.py"
+    },
+    {
+      "src": "/api/products/(.*)",
+      "dest": "backend/server.py"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "backend/server.py"
     }
