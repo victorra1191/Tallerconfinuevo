@@ -3,14 +3,22 @@
   "builds": [
     {
       "src": "backend/server.py",
-      "use": "@vercel/python",
-      "config": { "runtime": "python3.9" }
+      "use": "@vercel/python"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
   ],
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "backend/server.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
     }
   ]
 }
