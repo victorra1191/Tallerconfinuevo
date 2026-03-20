@@ -1,5 +1,12 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.py",
+      "use": "@vercel/python",
+      "config": { "includeFiles": "backend/**" }
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
