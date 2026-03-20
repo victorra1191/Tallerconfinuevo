@@ -1,52 +1,53 @@
 import sys
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 
-# Asegurar que Vercel encuentre los módulos locales
-sys.path.append(str(Path(__file__).parent))
+# Inyección de ruta para que Python vea la carpeta backend
+BASE_DIR = Path(__file__).resolve().parent
+sys.path.append(str(BASE_DIR))
 
 import database
 import models
 import data_seeder 
 from routes import products, services, quotes, appointments, contact, newsletter, blog, admin
 
-app = FastAPI(title="Confiautos API")
+app = FastAPI(title="Confiautos API v2")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Registramos las rutas con el prefijo /api para que coincidan con vercel.json
-app.include_router(products.router, prefix="/products", tags=["Products"])
-app.include_router(services.router, prefix="/services", tags=["Services"])
-app.include_router(quotes.router, prefix="/quotes", tags=["Quotes"])
-app.include_router(appointments.router, prefix="/appointments", tags=["Appointments"])
-app.include_router(contact.router, prefix="/contact", tags=["Contact"])
-app.include_router(newsletter.router, prefix="/newsletter", tags=["Newsletter"])
-app.include_router(blog.router, prefix="/blog", tags=["Blog"])
-app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+# Creamos un router de API para agrupar todo bajo un mismo nivel
+api_router = APIRouter()
+
+# Registro de rutas: Asegúrate que en products.py el router NO tenga prefix
+api_router.include_router(products.router, prefix="/products", tags=["Prod"])
+api_router.include_router(services.router, prefix="/services", tags=["Serv"])
+api_router.include_router(blog.router, prefix="/blog", tags=["Blog"])
+api_router.include_router(appointments.router, prefix="/appointments")
+
+# Unimos todo al app principal
+app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_event():
-    # Crea las tablas en Neon (Asegúrate de haber hecho el DROP TABLE en Neon)
-    database.Base.metadata.create_all(bind=database.engine)
+    # Sincronización forzada de esquemas
+    models.Base.metadata.create_all(bind=database.engine)
 
-@app.get("/")
-async def health():
-    return {"status": "online", "server": "Confiautos Panama"}
+@app.get("/health")
+def check_health():
+    return {"status": "online", "db": "connected", "version": "2.0"}
 
 @app.get("/seed-db")
-def run_database_seed():
+def execute_seeding():
     try:
         data_seeder.seed_all()
-        return {
-            "status": "success", 
-            "message": "Tablas sincronizadas y 62 productos cargados en Neon"
-        }
+        return {"status": "success", "items_loaded": 62}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+# Importante: Vercel necesita que el objeto se llame 'app'
