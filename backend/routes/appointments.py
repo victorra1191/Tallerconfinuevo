@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 import models
 from database import get_db
-from datetime import datetime
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
 
@@ -14,13 +13,16 @@ def create_appointment(appointment: models.AppointmentCreate, db: Session = Depe
             email=appointment.email,
             phone=appointment.phone,
             service_id=appointment.service_id,
-            appointment_date=appointment.appointment_date,
-            status="pending"
+            appointment_date=appointment.appointment_date
         )
         db.add(new_app)
         db.commit()
         db.refresh(new_app)
-        return new_app
+        return {"status": "success", "id": new_app.id}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/")
+def get_all_appointments(db: Session = Depends(get_db)):
+    return db.query(models.Appointment).all()
