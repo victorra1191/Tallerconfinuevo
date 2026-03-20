@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 import models
 import database
 
-# Definimos el prefijo exacto. 
-# IMPORTANTE: No pongas barra al final aquí.
+# Prefijo único: Esto hará que la ruta sea /api/products
 router = APIRouter(prefix="/api/products", tags=["products"])
 
-# Al usar get("") sin barra, FastAPI responderá a /api/products
+# GET sin barra final para que coincida exactamente con lo que pide el frontend
 @router.get("")
 def read_products(db: Session = Depends(database.get_db)):
     try:
