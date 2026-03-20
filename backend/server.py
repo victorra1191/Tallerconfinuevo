@@ -4,18 +4,16 @@ import os
 import sys
 from pathlib import Path
 
-# Configuración de rutas para Vercel
+# Configurar rutas para encontrar los módulos locales
 sys.path.append(str(Path(__file__).parent))
 
-# Importamos modelos y base de datos
+# Importar la base de datos y modelos DESPUÉS de configurar el path
 from .database import engine, Base
 from . import models
 from .routes import products, services, quotes, appointments, contact, newsletter, blog, admin
 
 app = FastAPI(
     title="Confiautos API",
-    description="Sistema de gestión para Confiautos Panama",
-    version="1.0.0",
     root_path="/api"
 )
 
@@ -27,30 +25,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Definimos el Router principal
-api_router = APIRouter()
+# Router principal
+router = APIRouter()
 
-@api_router.get("/")
+@router.get("/")
 async def root():
     return {"status": "online", "message": "Confiautos API Ready"}
 
 # Inclusión de rutas
-api_router.include_router(products.router)
-api_router.include_router(services.router)
-api_router.include_router(quotes.router)
-api_router.include_router(appointments.router)
-api_router.include_router(contact.router)
-api_router.include_router(newsletter.router)
-api_router.include_router(blog.router)
-api_router.include_router(admin.router)
+router.include_router(products.router)
+router.include_router(services.router)
+router.include_router(quotes.router)
+router.include_router(appointments.router)
+router.include_router(contact.router)
+router.include_router(newsletter.router)
+router.include_router(blog.router)
+router.include_router(admin.router)
 
-app.include_router(api_router)
+app.include_router(router)
 
-# Crear tablas en Neon al iniciar
+# Evento de inicio para crear tablas
 @app.on_event("startup")
 async def startup_event():
     try:
+        # Esto crea las tablas en Neon si no existen
         models.Base.metadata.create_all(bind=engine)
-        print("🚀 Tablas verificadas en Neon")
+        print("✅ Base de datos sincronizada")
     except Exception as e:
-        print(f"❌ Error DB: {e}")
+        print(f"❌ Error al sincronizar DB: {str(e)}")
