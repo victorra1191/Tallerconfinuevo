@@ -1,9 +1,12 @@
+from sqlalchemy import Column, String, Float, DateTime, Boolean, JSON, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from database import Base  # Sin el punto inicial
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime
-import uuid
-from sqlalchemy import Column, String, Float, DateTime, Boolean, JSON
-from database import Base  # Importante: Esto viene del archivo database.py que editamos
+
+# Aquí siguen tus clases (Product, Service, Customer, etc.) 
+# Asegúrate de que las tablas de SQLAlchemy hereden de Base.
 
 # ==========================================
 # 1. TABLAS PARA NEON.TECH (SQLAlchemy)
