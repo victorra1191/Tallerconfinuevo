@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registro de rutas de la API
+# Registro de routers con prefijos claros
 app.include_router(products.router, prefix="/products")
 app.include_router(services.router, prefix="/services")
 app.include_router(quotes.router, prefix="/quotes")
@@ -31,23 +31,15 @@ app.include_router(newsletter.router, prefix="/newsletter")
 app.include_router(blog.router, prefix="/blog")
 app.include_router(admin.router, prefix="/admin")
 
-@app.on_event("startup")
-async def startup_event():
-    # Crea las tablas limpias en Neon
-    database.Base.metadata.create_all(bind=database.engine)
-
 @app.get("/")
 async def health():
     return {"status": "online", "server": "Confiautos Panama"}
 
-# ENDPOINT CRÍTICO PARA EL VOLCADO DE DATOS
-@app.get("/seed-db")
-def run_database_seed():
+# ESTA ES LA RUTA QUE VAMOS A USAR AHORA
+@app.get("/seed-data-final")
+def run_final_seed():
     try:
         data_seeder.seed_all()
-        return {
-            "status": "success", 
-            "message": "Tablas creadas y 62 productos insertados correctamente en Neon"
-        }
+        return {"status": "success", "message": "¡62 productos y servicios cargados en Neon!"}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
