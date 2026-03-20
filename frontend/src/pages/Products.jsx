@@ -29,18 +29,23 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // CERTEZA: CRACO requiere process.env y el prefijo REACT_APP_
+        
+        // Certeza técnica: CRACO requiere process.env y el prefijo REACT_APP_
         const baseUrl = process.env.REACT_APP_API_URL || '/api';
+        
+        // Limpieza de URL para evitar dobles barras //
         const cleanUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         
-        const response = await axios.get(`${cleanUrl}/products/`);
+        // Llamada exacta al endpoint de Python
+        const response = await axios.get(`${cleanUrl}/products`);
+        
         setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error de conexión con Neon:", error);
+        console.error("Error detallado de conexión:", error);
         toast({
           variant: "destructive",
           title: "Error de inventario",
-          description: "No se pudo conectar con la base de datos de Confiautos.",
+          description: "No se pudo conectar con la base de datos Neon.",
         });
       } finally {
         setLoading(false);
@@ -100,7 +105,7 @@ const Products = () => {
       <div className="bg-gradient-to-r from-[#004A9F] to-[#D71920] text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-helvetica">Catálogo de Productos</h1>
-          <p className="text-lg opacity-90 font-helvetica">Inventario real sincronizado con Neon</p>
+          <p className="text-lg opacity-90 font-helvetica">Sincronizado con Neon</p>
         </div>
       </div>
 
@@ -121,7 +126,7 @@ const Products = () => {
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
+                <SelectItem value="all">Todo</SelectItem>
                 {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -146,13 +151,13 @@ const Products = () => {
       <div className="container mx-auto px-4 py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 text-[#004A9F] animate-spin mb-2" />
-            <p className="text-gray-500 font-helvetica">Consultando base de datos...</p>
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-2" />
+            <p className="text-gray-500 font-helvetica">Consultando Neon...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="group hover:border-[#004A9F] transition-all">
+              <Card key={product.id} className="group hover:border-blue-500 transition-all">
                 <div className="h-40 bg-white relative overflow-hidden">
                   <img 
                     src={getProductImageByType(product)} 
@@ -167,8 +172,8 @@ const Products = () => {
                   <CardDescription className="text-xs font-helvetica">SKU: {product.sku}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex justify-between items-center">
-                  <span className="text-xl font-bold text-[#D71920] font-helvetica">${Number(product.price).toFixed(2)}</span>
-                  <Button size="sm" onClick={() => handleAddToCart(product)} className="bg-[#004A9F] hover:bg-[#003370]">
+                  <span className="text-xl font-bold text-red-600 font-helvetica">${Number(product.price).toFixed(2)}</span>
+                  <Button size="sm" onClick={() => handleAddToCart(product)}>
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </CardContent>
