@@ -1,33 +1,23 @@
-import sys
-import os
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-
-# Permitir que el código vea los módulos locales
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-import database
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 import models
-from routes import products
+import database
 
-app = FastAPI()
+# Prefijo exacto para que la ruta final sea /api/products
+router = APIRouter(prefix="/api/products", tags=["products"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@router.get("")
+def read_products(db: Session = Depends(database.get_db)):
+    try:
+        products = db.query(models.Product).all()
+        return products
+    except Exception as e:
+        print(f"Error en Neon: {e}")
+        raise HTTPException(status_code=500, detail="Error interno en la base de datos")
 
-# Registro limpio del router. El prefijo se maneja dentro de products.py
-app.include_router(products.router)
-
-@app.on_event("startup")
-async def startup_event():
-    models.Base.metadata.create_all(bind=database.engine)
-
-@app.get("/api/health")
-@app.get("/health")
-def health():
-    return {"status": "ok", "msg": "Conectado a Confiautos"}
+@router.get("/{product_id}")
+def read_product(product_id: int, db: Session = Depends(database.get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return product
