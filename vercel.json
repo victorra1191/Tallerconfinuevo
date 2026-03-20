@@ -4,24 +4,22 @@
     {
       "src": "backend/server.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
   ],
   "routes": [
     {
-      "src": "/api/health",
-      "dest": "backend/server.py"
-    },
-    {
-      "src": "/api/seed-db",
-      "dest": "backend/server.py"
-    },
-    {
-      "src": "/api/products/(.*)",
-      "dest": "backend/server.py"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "backend/server.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1",
+      "check": true
     }
   ]
 }
