@@ -29,14 +29,13 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        
-        // Certeza técnica: CRACO requiere process.env y el prefijo REACT_APP_
+        // Certeza: REACT_APP_API_URL debe ser https://tallerconfinuevo.vercel.app/api
         const baseUrl = process.env.REACT_APP_API_URL || '/api';
         
-        // Limpieza de URL para evitar dobles barras //
+        // Limpiamos la URL de cualquier barra final
         const cleanUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         
-        // Llamada exacta al endpoint de Python
+        // Llamada limpia: esto generará exactamente /api/products
         const response = await axios.get(`${cleanUrl}/products`);
         
         setProducts(Array.isArray(response.data) ? response.data : []);
@@ -45,7 +44,7 @@ const Products = () => {
         toast({
           variant: "destructive",
           title: "Error de inventario",
-          description: "No se pudo conectar con la base de datos Neon.",
+          description: "No se pudo conectar con Neon. Verifica la ruta /api/products",
         });
       } finally {
         setLoading(false);
@@ -54,6 +53,7 @@ const Products = () => {
     fetchProducts();
   }, [toast]);
 
+  // Mantenemos el resto de tu lógica de filtros igual para no romper nada...
   useEffect(() => {
     const updateQuoteCount = () => {
       const saved = JSON.parse(localStorage.getItem('quoteList') || '[]');
@@ -105,11 +105,11 @@ const Products = () => {
       <div className="bg-gradient-to-r from-[#004A9F] to-[#D71920] text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-helvetica">Catálogo de Productos</h1>
-          <p className="text-lg opacity-90 font-helvetica">Sincronizado con Neon</p>
+          <p className="text-lg opacity-90 font-helvetica">Inventario real sincronizado con Neon</p>
         </div>
       </div>
 
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10 font-helvetica">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -117,30 +117,26 @@ const Products = () => {
               placeholder="Buscar por nombre, marca o SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 font-helvetica"
+              className="pl-10"
             />
           </div>
           <div className="flex gap-2 w-full md:w-auto">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-40 font-helvetica">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
+              <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="Categoría" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todo</SelectItem>
                 {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-              <SelectTrigger className="w-full md:w-32 font-helvetica">
-                <SelectValue placeholder="Marca" />
-              </SelectTrigger>
+              <SelectTrigger className="w-full md:w-32"><SelectValue placeholder="Marca" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Marcas</SelectItem>
                 {brands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
               </SelectContent>
             </Select>
             {quoteCount > 0 && (
-              <Button onClick={() => setIsQuoteModalOpen(true)} className="bg-green-600 font-helvetica">
+              <Button onClick={() => setIsQuoteModalOpen(true)} className="bg-green-600">
                 <Calculator className="w-4 h-4 mr-2" /> ({quoteCount})
               </Button>
             )}
@@ -150,30 +146,25 @@ const Products = () => {
 
       <div className="container mx-auto px-4 py-8">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
+          <div className="flex flex-col items-center justify-center py-20 font-helvetica">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-2" />
-            <p className="text-gray-500 font-helvetica">Consultando Neon...</p>
+            <p className="text-gray-500">Consultando Neon...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 font-helvetica">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="group hover:border-blue-500 transition-all">
+              <Card key={product.id} className="group hover:border-blue-500 transition-all shadow-sm">
                 <div className="h-40 bg-white relative overflow-hidden">
-                  <img 
-                    src={getProductImageByType(product)} 
-                    alt={product.name} 
-                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
-                    onError={(e) => { e.target.src = '/images/marcas/generico.png' }}
-                  />
+                  <img src={getProductImageByType(product)} alt={product.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform" onError={(e) => { e.target.src = '/images/marcas/generico.png' }} />
                   <Badge className="absolute top-2 right-2 bg-[#004A9F]">{product.brand}</Badge>
                 </div>
                 <CardHeader className="p-4">
-                  <CardTitle className="text-sm font-bold h-10 line-clamp-2 font-helvetica">{product.name}</CardTitle>
-                  <CardDescription className="text-xs font-helvetica">SKU: {product.sku}</CardDescription>
+                  <CardTitle className="text-sm font-bold h-10 line-clamp-2">{product.name}</CardTitle>
+                  <CardDescription className="text-xs">SKU: {product.sku}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 flex justify-between items-center">
-                  <span className="text-xl font-bold text-red-600 font-helvetica">${Number(product.price).toFixed(2)}</span>
-                  <Button size="sm" onClick={() => handleAddToCart(product)}>
+                  <span className="text-xl font-bold text-red-600">${Number(product.price).toFixed(2)}</span>
+                  <Button size="sm" onClick={() => handleAddToCart(product)} className="bg-[#004A9F] hover:bg-[#003370]">
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </CardContent>
