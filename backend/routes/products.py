@@ -1,67 +1,38 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional
-from models import Product, ProductFilter, SuccessResponse
-from database import database
+from sqlalchemy.orm import Session
 import logging
+
+# IMPORTANTE: Imports absolutos para Vercel
+import models
+from database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/products", tags=["products"])
 
-@router.get("/", response_model=List[Product])
-async def get_products(
-    brand: Optional[str] = Query(None, description="Filter by brand"),
-    type: Optional[str] = Query(None, description="Filter by product type"),
-    keyword: Optional[str] = Query(None, description="Search by keyword"),
-    min_price: Optional[float] = Query(None, description="Minimum price"),
-    max_price: Optional[float] = Query(None, description="Maximum price")
+@router.get("/")
+def get_products(
+    brand: Optional[str] = Query(None),
+    type: Optional[str] = Query(None),
+    db: Session = Depends(get_db) # Usamos la sesión de SQLAlchemy
 ):
-    """Get all products with optional filtering"""
+    """Obtener productos desde Neon"""
     try:
-        filter_params = ProductFilter(
-            brand=brand,
-            type=type,
-            keyword=keyword,
-            min_price=min_price,
-            max_price=max_price
-        )
-        products = await database.get_products(filter_params)
-        return products
+        # Consulta real a la base de datos usando SQLAlchemy
+        query = db.query(models.Product)
+        if brand:
+            query = query.filter(models.Product.brand == brand)
+        if type:
+            query = query.filter(models.Product.type == type)
+        
+        return query.all()
     except Exception as e:
-        logger.error(f"Error getting products: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"Error en DB: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{product_id}", response_model=Product)
-async def get_product(product_id: str):
-    """Get a specific product by ID"""
-    try:
-        product = await database.get_product_by_id(product_id)
-        if not product:
-            raise HTTPException(status_code=404, detail="Product not found")
-        return product
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting product {product_id}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@router.get("/brands/list")
-async def get_brands():
-    """Get list of all available brands"""
-    try:
-        products = await database.get_products()
-        brands = list(set(product.brand for product in products))
-        return {"brands": sorted(brands)}
-    except Exception as e:
-        logger.error(f"Error getting brands: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@router.get("/types/list")
-async def get_product_types():
-    """Get list of all available product types"""
-    try:
-        products = await database.get_products()
-        types = list(set(product.type for product in products))
-        return {"types": sorted(types)}
-    except Exception as e:
-        logger.error(f"Error getting product types: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+@router.get("/{product_id}")
+def get_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return product
