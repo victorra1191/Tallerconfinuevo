@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '../hooks/use-toast';
 import QuoteModal from '../components/QuoteModal';
 
+// Función para point exacto a las imágenes
 const getProductImageByType = (product) => {
   const brand = product.brand?.toLowerCase().replace(/\s+/g, '-') || 'generico';
   return `/images/marcas/${brand}.png`;
@@ -98,7 +99,7 @@ const Products = () => {
       <div className="bg-white shadow-md border-b sticky top-0 z-20 px-4 py-4 container mx-auto flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <Input placeholder="Buscar por productos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-12" />
+          <Input placeholder="Buscar por SKU, nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-12" />
         </div>
         <div className="flex gap-2">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -128,41 +129,48 @@ const Products = () => {
         {loading ? (
           <div className="flex flex-col items-center py-20">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-2" />
-            <p className="text-gray-500">Cargando inventario...</p>
+            <p className="text-gray-500">Cargando inventario real...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden border-0 shadow-lg flex flex-col h-full bg-white group">
                 <div className="relative h-64 p-6 flex items-center justify-center border-b">
-                  <Badge className="absolute top-4 left-4 bg-white text-gray-700 border shadow-sm">{product.type}</Badge>
-                  <Badge className="absolute top-4 right-4 bg-[#004A9F]">{product.brand}</Badge>
-                  <img src={getProductImageByType(product)} alt={product.name} className="max-h-full object-contain transform group-hover:scale-110 transition-transform" onError={(e) => e.target.src = '/images/marcas/generico.png'} />
+                  <Badge className="absolute top-4 left-4 bg-white text-gray-700 border shadow-sm px-3 py-1">{product.type}</Badge>
+                  <Badge className="absolute top-4 right-4 bg-[#004A9F] text-white px-3 py-1">{product.brand}</Badge>
+                  <img src={getProductImageByType(product)} alt={product.name} className="max-h-full object-contain transform group-hover:scale-110 transition-transform duration-500" onError={(e) => { e.target.src = '/images/marcas/generico.png' }} />
                 </div>
                 <CardContent className="p-6 flex flex-col flex-1">
                   <h3 className="text-xl font-bold text-[#D71920] text-center mb-2 min-h-[3.5rem] line-clamp-2">{product.name}</h3>
-                  <p className="text-sm text-gray-500 text-center mb-4 italic">Lubrica el motor y mejora el rendimiento general.</p>
+                  <p className="text-sm text-gray-600 text-center mb-4 italic">Lubrica el motor y mejora el rendimiento general.</p>
                   
-                  <div className="space-y-2 mb-6 border-t pt-4">
-                    <div className="flex justify-between text-sm"><span className="text-gray-500 font-bold">SKU:</span><span className="font-mono">{product.sku}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-gray-500 font-bold">Tipo:</span><Badge variant="outline" className="text-[10px]">{product.type}</Badge></div>
+                  <div className="space-y-3 mb-6 border-t pt-4">
+                    <div className="flex justify-between text-sm"><span className="text-gray-500 font-bold">SKU:</span><span className="font-mono text-gray-900">{product.sku}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gray-500 font-bold">Tipo:</span><Badge variant="outline" className="text-[10px] font-normal">{product.type}</Badge></div>
                     <div className="text-center pt-2">
-                      <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Usos recomendados:</span>
-                      <p className="text-xs text-gray-600">Motores de autos, motos o maquinaria</p>
+                      <p className="text-xs text-gray-400 font-semibold uppercase mb-1">Usos recomendados:</p>
+                      <p className="text-sm text-gray-700">Motores de autos, motos o maquinaria</p>
                     </div>
                   </div>
 
                   <div className="mt-auto">
-                    <div className="text-center mb-4"><span className="text-3xl font-black text-[#D71920]">${Number(product.price).toFixed(2)}</span></div>
+                    <div className="text-center mb-6"><span className="text-3xl font-black text-[#D71920]">${Number(product.price).toFixed(2)}</span></div>
                     <div className="grid grid-cols-5 gap-2">
                       <Button 
-                        onClick={() => window.open(`https://wa.me/50766385935?text=Hola, me interesa el producto: ${product.name} (SKU: ${product.sku})`, '_blank')} 
-                        className="col-span-4 bg-[#D71920] hover:bg-[#b01319] font-bold h-12"
+                        onClick={() => {
+                           const message = encodeURIComponent(`Hola, me interesa el producto: ${product.name} (SKU: ${product.sku}) por $${product.price}. ¿Tienen disponibilidad?`);
+                           window.open(`https://wa.me/50766385935?text=${message}`, '_blank');
+                        }}
+                        className="col-span-4 bg-[#D71920] hover:bg-[#b01319] text-white h-12 font-bold text-lg rounded-lg shadow hover:shadow-lg transition-all hover:scale-105"
                       >
-                        <Tag className="w-4 h-4 mr-2" /> Pedir
+                        <Tag className="w-5 h-5 mr-2" /> Pedir
                       </Button>
-                      <Button variant="outline" onClick={() => handleAddToCart(product)} className="col-span-1 border-gray-200 h-12">
-                        <ShoppingCart className="w-5 h-5 text-[#004A9F]" />
+                      <Button 
+                        variant="outline" 
+                        onClick={() => handleAddToCart(product)} 
+                        className="col-span-1 border-gray-200 h-12 p-0 flex items-center justify-center hover:bg-gray-50 rounded-lg shadow-sm"
+                      >
+                        <ShoppingCart className="w-6 h-6 text-[#004A9F]" />
                       </Button>
                     </div>
                   </div>
