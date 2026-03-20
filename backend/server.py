@@ -1,18 +1,17 @@
 import sys
 from pathlib import Path
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-# Inyección de ruta para que Python vea la carpeta backend
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
+# Asegurar path
+sys.path.append(str(Path(__file__).parent))
 
 import database
 import models
-import data_seeder 
-from routes import products, services, quotes, appointments, contact, newsletter, blog, admin
+import data_seeder
+from routes import products, services, blog
 
-app = FastAPI(title="Confiautos API v2")
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,33 +20,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Creamos un router de API para agrupar todo bajo un mismo nivel
-api_router = APIRouter()
-
-# Registro de rutas: Asegúrate que en products.py el router NO tenga prefix
-api_router.include_router(products.router, prefix="/products", tags=["Prod"])
-api_router.include_router(services.router, prefix="/services", tags=["Serv"])
-api_router.include_router(blog.router, prefix="/blog", tags=["Blog"])
-api_router.include_router(appointments.router, prefix="/appointments")
-
-# Unimos todo al app principal
-app.include_router(api_router)
+# REGISTRO DIRECTO (Sin agrupadores intermedios)
+app.include_router(products.router, prefix="/products")
+app.include_router(services.router, prefix="/services")
+app.include_router(blog.router, prefix="/blog")
 
 @app.on_event("startup")
 async def startup_event():
-    # Sincronización forzada de esquemas
-    models.Base.metadata.create_all(bind=database.engine)
+    # Esto crea las tablas en Neon al encenderse
+    database.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/health")
-def check_health():
-    return {"status": "online", "db": "connected", "version": "2.0"}
+def health():
+    return {"status": "ok", "msg": "Confiautos Panama Online"}
 
 @app.get("/seed-db")
-def execute_seeding():
+def seed_db():
     try:
         data_seeder.seed_all()
-        return {"status": "success", "items_loaded": 62}
+        return {"status": "success", "msg": "62 productos cargados"}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# Importante: Vercel necesita que el objeto se llame 'app'
+        return {"status": "error", "detail": str(e)}
