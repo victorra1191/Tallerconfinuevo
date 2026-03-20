@@ -3,22 +3,21 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 import logging
 
-# IMPORTANTE: Imports absolutos para Vercel
 import models
 from database import get_db
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/products", tags=["products"])
+
+# QUITAMOS el prefix="/products" de aquí
+router = APIRouter(tags=["products"])
 
 @router.get("/")
 def get_products(
     brand: Optional[str] = Query(None),
     type: Optional[str] = Query(None),
-    db: Session = Depends(get_db) # Usamos la sesión de SQLAlchemy
+    db: Session = Depends(get_db)
 ):
-    """Obtener productos desde Neon"""
     try:
-        # Consulta real a la base de datos usando SQLAlchemy
         query = db.query(models.Product)
         if brand:
             query = query.filter(models.Product.brand == brand)
