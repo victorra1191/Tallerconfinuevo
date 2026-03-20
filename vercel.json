@@ -1,10 +1,16 @@
 {
   "version": 2,
-  "functions": {
-    "backend/server.py": {
-      "runtime": "@vercel/python"
+  "builds": [
+    {
+      "src": "backend/server.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
-  },
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -12,7 +18,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/$1"
     }
   ]
 }
