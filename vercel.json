@@ -3,8 +3,7 @@
   "builds": [
     {
       "src": "backend/server.py",
-      "use": "@vercel/python",
-      "config": { "includeFiles": "backend/**" }
+      "use": "@vercel/python"
     }
   ],
   "rewrites": [
