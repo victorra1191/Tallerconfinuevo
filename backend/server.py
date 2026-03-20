@@ -4,14 +4,15 @@ import os
 import sys
 from pathlib import Path
 
-# Configurar path para imports relativos
-sys.path.append(str(Path(__file__).parent))
+# Esto es lo que permite que los imports funcionen en Vercel
+root_path = Path(__file__).parent
+sys.path.append(str(root_path))
 
-from .database import engine, Base
-from . import models
-from .routes import products, services, quotes, appointments, contact, newsletter, blog, admin
+# CAMBIO: Imports absolutos (sin el punto inicial)
+import database
+import models
+from routes import products, services, quotes, appointments, contact, newsletter, blog, admin
 
-# Instancia UNICA
 app = FastAPI(
     title="Confiautos API",
     root_path="/api"
@@ -31,7 +32,7 @@ router = APIRouter()
 async def root():
     return {"status": "online", "message": "Confiautos API Ready"}
 
-# Incluir rutas
+# Inclusión de rutas
 router.include_router(products.router)
 router.include_router(services.router)
 router.include_router(quotes.router)
@@ -46,7 +47,7 @@ app.include_router(router)
 @app.on_event("startup")
 async def startup_event():
     try:
-        models.Base.metadata.create_all(bind=engine)
+        models.Base.metadata.create_all(bind=database.engine)
         print("✅ Tablas sincronizadas en Neon")
     except Exception as e:
         print(f"❌ Error DB: {str(e)}")
