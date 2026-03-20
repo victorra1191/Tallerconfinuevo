@@ -3,6 +3,10 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 import sys
+app = FastAPI(
+    title="Confiautos API",
+    root_path="/api"
+)
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
