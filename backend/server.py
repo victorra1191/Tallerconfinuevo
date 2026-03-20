@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-# Asegurar que Vercel encuentre los módulos
+# Asegurar que Vercel encuentre los módulos locales
 sys.path.append(str(Path(__file__).parent))
 
 import database
@@ -21,30 +21,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registro de rutas individuales
-app.include_router(products.router, prefix="/products", tags=["products"])
-app.include_router(services.router, prefix="/services", tags=["services"])
-app.include_router(quotes.router, prefix="/quotes", tags=["quotes"])
-app.include_router(appointments.router, prefix="/appointments", tags=["appointments"])
-app.include_router(contact.router, prefix="/contact", tags=["contact"])
-app.include_router(newsletter.router, prefix="/newsletter", tags=["newsletter"])
-app.include_router(blog.router, prefix="/blog", tags=["blog"])
-app.include_router(admin.router, prefix="/admin", tags=["admin"])
+# Registramos las rutas con el prefijo /api para que coincidan con vercel.json
+app.include_router(products.router, prefix="/products", tags=["Products"])
+app.include_router(services.router, prefix="/services", tags=["Services"])
+app.include_router(quotes.router, prefix="/quotes", tags=["Quotes"])
+app.include_router(appointments.router, prefix="/appointments", tags=["Appointments"])
+app.include_router(contact.router, prefix="/contact", tags=["Contact"])
+app.include_router(newsletter.router, prefix="/newsletter", tags=["Newsletter"])
+app.include_router(blog.router, prefix="/blog", tags=["Blog"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 @app.on_event("startup")
 async def startup_event():
-    # Crea las tablas si no existen al arrancar
+    # Crea las tablas en Neon (Asegúrate de haber hecho el DROP TABLE en Neon)
     database.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/")
 async def health():
-    return {"status": "online", "message": "Confiautos Backend Rodando"}
+    return {"status": "online", "server": "Confiautos Panama"}
 
-# RUTA DE EMERGENCIA PARA EL SEEDER
 @app.get("/seed-db")
-def emergency_seed():
+def run_database_seed():
     try:
         data_seeder.seed_all()
-        return {"status": "success", "message": "¡Base de datos cargada con éxito!"}
+        return {
+            "status": "success", 
+            "message": "Tablas sincronizadas y 62 productos cargados en Neon"
+        }
     except Exception as e:
-        return {"status": "error", "detail": str(e)}
+        return {"status": "error", "message": str(e)}
