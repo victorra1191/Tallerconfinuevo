@@ -11,7 +11,7 @@ def send_message(message: models.ContactMessageCreate, db: Session = Depends(get
         new_msg = models.ContactMessage(**message.dict())
         db.add(new_msg)
         db.commit()
-        return {"status": "success", "message": "Mensaje recibido"}
+        return {"status": "success"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
