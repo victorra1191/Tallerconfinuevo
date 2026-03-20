@@ -3,33 +3,24 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 import sys
-app = FastAPI(
-    title="Confiautos API",
-    root_path="/api"
-)
 from pathlib import Path
+
+# Añadir el directorio actual al path para evitar ModuleNotFoundError
 sys.path.append(str(Path(__file__).parent))
 
 # Importamos la conexión y los modelos
 from .database import engine, Base
 from . import models
-
-# Intentar crear las tablas en Neon al cargar el archivo
-try:
-    models.Base.metadata.create_all(bind=engine)
-except Exception as e:
-    print(f"Error inicializando tablas: {e}")
-
-# Importamos las rutas (Asegúrate que estos archivos existan en /routes)
 from .routes import products, services, quotes, appointments, contact, newsletter, blog, admin
-    
+
+# UNIFICADO: Solo una instancia de FastAPI
 app = FastAPI(
     title="Confiautos API",
     description="Sistema de gestión para Confiautos Panama",
-    version="1.0.0"
+    version="1.0.0",
+    root_path="/api"  # Importante para Vercel
 )
 
-# Configuración de CORS para que React pueda hablar con la API
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -38,14 +29,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Prefijo /api para todas las rutas
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter() # Quitamos el prefijo aquí porque el rewrite de Vercel ya lo maneja
 
 @api_router.get("/")
 async def root():
     return {"status": "online", "message": "Confiautos API Ready"}
 
-# Incluimos los módulos de rutas
+# Incluir rutas
 api_router.include_router(products.router)
 api_router.include_router(services.router)
 api_router.include_router(quotes.router)
@@ -59,4 +49,9 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_event():
-    print("🚀 Servidor Confiautos encendido exitosamente")
+    # Creamos las tablas aquí para asegurar que la conexión esté lista
+    try:
+        models.Base.metadata.create_all(bind=engine)
+        print("🚀 Tablas creadas/verificadas en Neon")
+    except Exception as e:
+        print(f"❌ Error en DB: {e}")
