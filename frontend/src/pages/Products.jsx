@@ -19,14 +19,22 @@ const Products = () => {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [quoteCount, setQuoteCount] = useState(0);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const baseUrl = process.env.REACT_APP_API_URL || '/api';
-        const cleanUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        const response = await axios.get(`${cleanUrl}/products`);
-        setProducts(Array.isArray(response.data) ? response.data : []);
+        // Forzamos la ruta relativa. Vercel se encargará de enviarlo a Python.
+        const response = await axios.get('/api/products');
+        
+        // Verificación de seguridad por si FastAPI devuelve algo inesperado
+        if (response.data && Array.isArray(response.data)) {
+           setProducts(response.data);
+        } else if (response.data && Array.isArray(response.data.products)) {
+           // Por si FastAPI lo envuelve en un objeto { products: [...] }
+           setProducts(response.data.products);
+        } else {
+           setProducts([]);
+        }
       } catch (error) {
         console.error("Error de conexión:", error);
         toast({
@@ -38,8 +46,9 @@ const Products = () => {
         setLoading(false);
       }
     };
+
     fetchProducts();
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     const updateQuoteCount = () => {
