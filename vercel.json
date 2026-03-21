@@ -17,10 +17,6 @@
       "destination": "backend/server.py"
     },
     {
-      "source": "/static/(.*)",
-      "destination": "/frontend/build/static/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/frontend/build/$1"
     },
