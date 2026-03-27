@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-from routes import products, admin
+from routes import products, admin  # Asegúrate de que admin esté aquí
 
 app = FastAPI()
 
@@ -20,11 +20,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registro de rutas con el prefijo /api que espera el Frontend
-app.include_router(products.router, prefix="/api")
+# REGISTRO DE RUTAS
+# Para los productos: NO usamos prefijo extra porque el frontend ya busca /api/products
+app.include_router(products.router)
 
-# IMPORTANTE: Aquí NO ponemos /admin porque admin.py ya lo trae dentro
-app.include_router(admin.router, prefix="/api")
+# Para el admin: NO usamos prefijo /api aquí porque Vercel ya se lo pone 
+# y el archivo admin.py ya tiene el suyo propio interno.
+app.include_router(admin.router)
 
 @app.on_event("startup")
 async def startup_event():
