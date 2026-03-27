@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-from routes import products
+from routes import products, admin
 
 app = FastAPI()
 
@@ -20,8 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registro limpio del router. El prefijo se maneja dentro de products.py
-app.include_router(products.router)
+# Registro de rutas con el prefijo /api que espera el Frontend
+app.include_router(products.router, prefix="/api")
+
+# IMPORTANTE: Aquí NO ponemos /admin porque admin.py ya lo trae dentro
+app.include_router(admin.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
