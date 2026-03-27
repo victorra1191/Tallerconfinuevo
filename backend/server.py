@@ -20,16 +20,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- CONFIGURACIÓN DE RUTAS ---
+# --- REGISTRO DE RUTAS ---
 
-# 1. Productos: Se queda igual para que sigan funcionando.
+# 1. Productos: Necesita /api porque tu React (Products.jsx) lo busca ahí.
 app.include_router(products.router, prefix="/api")
 
-# 2. Admin: Quitamos el prefijo "/api" aquí porque el archivo admin.py 
-# ya tiene internamente un prefijo que causa conflicto con Vercel.
+# 2. Admin: NO agregues /api aquí. 
+# Vercel se encargará de enviarle la ruta limpia.
 app.include_router(admin.router)
 
-# ------------------------------
+# --------------------------
 
 @app.on_event("startup")
 async def startup_event():
