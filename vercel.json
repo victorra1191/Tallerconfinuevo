@@ -15,6 +15,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/admin/(.*)",
+      "destination": "backend/server.py"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "backend/server.py"
     },
