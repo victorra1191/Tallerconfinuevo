@@ -18,30 +18,41 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
+      // Formatear los datos como x-www-form-urlencoded para que FastAPI los acepte
+      const formBody = new URLSearchParams();
+      formBody.append('username', formData.username);
+      formBody.append('password', formData.password);
+
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify(formData)
+        body: formBody
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Store token and user data
+        // Guardamos el token. Asegúrate de que coincida con lo que espera tu app (admin_token o adminToken)
         localStorage.setItem('admin_token', data.access_token);
-        localStorage.setItem('admin_user', JSON.stringify(data.user));
+        localStorage.setItem('adminToken', data.access_token); // Guardamos ambos por si acaso
+        
+        // Si tu backend no devuelve el objeto user, evitamos que marque error
+        const userName = data.user ? data.user.full_name : 'Administrador';
         
         toast({
           title: "Login exitoso",
-          description: `Bienvenido, ${data.user.full_name}!`,
+          description: `Bienvenido, ${userName}!`,
+          className: "bg-green-500 text-white border-none",
         });
 
-        // Redirect to dashboard
-        window.location.href = '/admin/dashboard';
+        // Redirigir al dashboard
+        setTimeout(() => {
+          window.location.href = '/admin/dashboard';
+        }, 1000);
       } else {
-        throw new Error(data.detail || 'Error en el login');
+        throw new Error(data.detail || 'Credenciales incorrectas');
       }
     } catch (error) {
       toast({
@@ -161,7 +172,7 @@ const AdminLogin = () => {
         {/* Footer */}
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            © 2024 Confiautos Panama. Todos los derechos reservados.
+            © {new Date().getFullYear()} Confiautos Panama. Todos los derechos reservados.
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Sistema seguro protegido por autenticación JWT
