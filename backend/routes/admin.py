@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
 import models
 import hashlib
 from database import get_db
 from pydantic import BaseModel
 
+# El prefijo /admin es interno. No se debe repetir en el server.py
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 class LoginRequest(BaseModel):
@@ -14,11 +14,13 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
+    # Buscamos en la tabla admin_users
     admin = db.query(models.AdminUser).filter(models.AdminUser.username == data.username).first()
     
     if not admin:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
+    # Hasheo compatible con tu base de datos (SHA-256)
     hashed_input = hashlib.sha256(data.password.encode()).hexdigest()
     
     if hashed_input != admin.password:
@@ -26,7 +28,11 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 
     return {
         "status": "success",
-        "user": {"username": admin.username, "full_name": admin.full_name}
+        "user": {
+            "username": admin.username,
+            "full_name": admin.full_name,
+            "role": admin.role
+        }
     }
 
 @router.get("/stats")
