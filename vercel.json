@@ -23,6 +23,10 @@
       "destination": "backend/server.py"
     },
     {
+      "source": "/admin/(.*)",
+      "destination": "/frontend/index.html"
+    },
+    {
       "source": "/([^.]*)",
       "destination": "/frontend/index.html"
     },
