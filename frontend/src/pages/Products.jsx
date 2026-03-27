@@ -33,7 +33,7 @@ const Products = () => {
       try {
         setLoading(true);
         // Ruta relativa para evitar CORS en Vercel
-        const response = await axios.get('/api/products');
+        const response = await axios.get('/api/api/products');
         
         // Verificación de seguridad
         if (response.data && Array.isArray(response.data)) {
