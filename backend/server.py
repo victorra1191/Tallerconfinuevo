@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-from routes import products, admin  # Asegúrate de que admin esté aquí
+from routes import products, admin 
 
 app = FastAPI()
 
@@ -20,13 +20,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTRO DE RUTAS
-# Para los productos: NO usamos prefijo extra porque el frontend ya busca /api/products
-app.include_router(products.router)
+# --- ESTA ES LA PARTE CRÍTICA ---
 
-# Para el admin: NO usamos prefijo /api aquí porque Vercel ya se lo pone 
-# y el archivo admin.py ya tiene el suyo propio interno.
-app.include_router(admin.router)
+# 1. Productos: Tu React pide '/api/products', así que aquí SI necesitamos el prefijo.
+app.include_router(products.router, prefix="/api")
+
+# 2. Admin: Tu React pide '/api/admin/login'. 
+# Como el archivo admin.py ya tiene '/admin' adentro, solo le sumamos '/api'.
+app.include_router(admin.router, prefix="/api")
+
+# --------------------------------
 
 @app.on_event("startup")
 async def startup_event():
