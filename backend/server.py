@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-from routes import products, admin # Asegúrate de importar ambos
+from routes import products, admin 
 
 app = FastAPI()
 
@@ -19,9 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ESTO VUELVE A ACTIVAR LOS PRODUCTOS Y EL ADMIN
-app.include_router(products.router, prefix="/api")
-app.include_router(admin.router, prefix="/api")
+# REGISTRO DE RUTAS SIN DUPLICAR /API
+# Quitamos el prefix="/api" de aquí porque ya lo maneja el vercel.json y el router interno
+app.include_router(products.router)
+app.include_router(admin.router)
 
 @app.on_event("startup")
 async def startup_event():
