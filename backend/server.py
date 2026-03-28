@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+# Asegura que Python vea los módulos internos
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
@@ -19,14 +20,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTRO LIMPIO
-# Si pones prefix="/api" aquí, y en Vercel también, se crea el error /api/api/
+# REGISTRO DE RUTAS SIN PREFIJOS DUPLICADOS
+# No pongas "/api" aquí. Deja que vercel.json lo maneje.
 app.include_router(products.router)
 app.include_router(admin.router)
 
 @app.on_event("startup")
 async def startup_event():
-    # Esto conecta Python con Neon
     models.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/api/health")
