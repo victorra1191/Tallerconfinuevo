@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+# Asegurar que Python vea la carpeta backend
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
@@ -19,12 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTRO DE RUTAS
-# Productos: prefix="/api" para que Products.jsx funcione
+# RUTAS: Usamos el prefijo /api para ambos para que el vercel.json sea simple
 app.include_router(products.router, prefix="/api")
-
-# Admin: SIN PREFIJO EXTRA. El vercel.json limpia la ruta.
-app.include_router(admin.router)
+app.include_router(admin.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
@@ -32,4 +30,4 @@ async def startup_event():
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "msg": "Conectado a Confiautos"}
+    return {"status": "ok", "msg": "Servidor Confiautos Activo"}
