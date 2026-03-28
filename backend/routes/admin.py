@@ -5,7 +5,7 @@ import hashlib
 from database import get_db
 from pydantic import BaseModel
 
-# CAMBIO CRITICO: El prefijo ahora es "/admin", sin repetir /api
+# El prefijo es /admin. Al sumarse al /api del server.py, da /api/admin/
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 class LoginRequest(BaseModel):
@@ -19,6 +19,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     if not admin_user:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
+    # Hasheo SHA-256 para comparar con tu base de datos de Neon
     hashed_input = hashlib.sha256(data.password.encode()).hexdigest()
     
     if hashed_input != admin_user.password:
