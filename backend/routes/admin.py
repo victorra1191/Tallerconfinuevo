@@ -5,7 +5,7 @@ import hashlib
 from database import get_db
 from pydantic import BaseModel
 
-# El prefijo /admin es interno. No se debe repetir en el server.py
+# CAMBIO CRITICO: El prefijo ahora es "/admin", sin repetir /api
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 class LoginRequest(BaseModel):
@@ -14,25 +14,19 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
-    # Buscamos en la tabla admin_users
-    admin = db.query(models.AdminUser).filter(models.AdminUser.username == data.username).first()
+    admin_user = db.query(models.AdminUser).filter(models.AdminUser.username == data.username).first()
     
-    if not admin:
+    if not admin_user:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
-    # Hasheo compatible con tu base de datos (SHA-256)
     hashed_input = hashlib.sha256(data.password.encode()).hexdigest()
     
-    if hashed_input != admin.password:
+    if hashed_input != admin_user.password:
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     return {
         "status": "success",
-        "user": {
-            "username": admin.username,
-            "full_name": admin.full_name,
-            "role": admin.role
-        }
+        "user": {"username": admin_user.username, "full_name": admin_user.full_name}
     }
 
 @router.get("/stats")
