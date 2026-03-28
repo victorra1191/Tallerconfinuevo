@@ -3,12 +3,11 @@ import os
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-# Asegurar que los módulos locales sean visibles
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-from routes import products, admin 
+from routes import products, admin # Asegúrate de importar ambos
 
 app = FastAPI()
 
@@ -20,8 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTRO DE RUTAS
-# Importante: Ambos llevan el prefijo /api para que coincidan con el vercel.json
+# ESTO VUELVE A ACTIVAR LOS PRODUCTOS Y EL ADMIN
 app.include_router(products.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 
