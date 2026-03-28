@@ -19,13 +19,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# REGISTRO DE RUTAS SIN DUPLICAR /API
-# Quitamos el prefix="/api" de aquí porque ya lo maneja el vercel.json y el router interno
+# REGISTRO LIMPIO
+# Si pones prefix="/api" aquí, y en Vercel también, se crea el error /api/api/
 app.include_router(products.router)
 app.include_router(admin.router)
 
 @app.on_event("startup")
 async def startup_event():
+    # Esto conecta Python con Neon
     models.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/api/health")
