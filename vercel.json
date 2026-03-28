@@ -19,7 +19,15 @@
       "destination": "backend/server.py"
     },
     {
+      "source": "/images/(.*)",
+      "destination": "/frontend/images/$1"
+    },
+    {
       "source": "/admin/(.*)",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/([^.]*)",
       "destination": "/frontend/index.html"
     },
     {
